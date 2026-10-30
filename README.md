@@ -1,111 +1,140 @@
 # BiomedBERT-based Classifier for Dentistry Studies
 
-Classificador de artigos científicos (área e tipo de estudo) baseado no modelo **BiomedBERT**, com interface web local para classificação.
+Scientific article classifier (main area and study type) based on the **BiomedBERT** model, with a local graphical interface for classification.
 
 ---
 
-## Sumário
+## Table of Contents
 
-- [Instalação local (Linux Mint)](#instalação-local-linux-mint)
-- [Como usar a interface](#como-usar-a-interface)
-- [Treinamento no Google Colab (com GPU)](#treinamento-no-google-colab-com-gpu)
-- [Categorias do modelo](#categorias-do-modelo)
-- [Estrutura do projeto](#estrutura-do-projeto)
+- [Local Installation (Linux Mint)](#local-installation-linux-mint)
+- [How to Use the Interface](#how-to-use-the-interface)
+- [Training on Google Colab (with GPU)](#training-on-google-colab-with-gpu)
+- [Model Categories](#model-categories)
+- [Project Structure](#project-structure)
 
 ---
 
-## Instalação local (Linux Mint)
+## Local Installation (Linux Mint)
 
-### 1. Instalar o pip
+### 1. Install pip
 ```bash
 sudo apt install python3-pip
 ```
 
-### 2. Instalar o ambiente virtual
+### 2. Install the virtual environment tool
 ```bash
 sudo apt install python3-venv
 ```
 
-### 3. Criar o ambiente virtual
+### 3. Install Tkinter (required for the graphical interface)
+```bash
+sudo apt install python3-tk
+```
+
+### 4. Create the virtual environment
 ```bash
 python3 -m venv biomedbert-env
 ```
 
-### 4. Ativar o ambiente virtual
+### 5. Activate the virtual environment
 ```bash
 source biomedbert-env/bin/activate
 ```
-Você verá `(biomedbert-env)` no início da linha do terminal — isso indica que está ativo. **Esse comando precisa ser rodado toda vez que você abrir um novo terminal**, antes de usar o programa.
+You will see `(biomedbert-env)` at the beginning of the terminal line — this means it is active. **This command must be run every time you open a new terminal**, before using the program.
 
-### 5. Instalar as bibliotecas necessárias
+### 6. Install the required libraries
 ```bash
 pip install transformers torch flask flask-cors
 ```
 
-### 6. Verificar se funcionou
+### 7. Verify the installation
 ```bash
 python3 -c "from transformers import AutoTokenizer; print('OK')"
 ```
-Se aparecer `OK`, está tudo certo.
+If `OK` appears, everything is set up correctly.
 
 ---
 
-## Como usar a interface
+## How to Use the Interface
 
-1. Ative o ambiente virtual:
+The program runs entirely from the file `biomedbert_app.py`. There is no need to start a server or open a browser.
+
+### Option A — Run from the terminal (recommended)
+
+1. **Open a terminal directly in the project folder.**
+   On Linux Mint, right-click an empty area inside the folder in the Files app and choose **"Open Terminal Here"**. This way you never need to type or change the folder path.
+
+2. **Activate the virtual environment:**
    ```bash
-   source biomedbert-env/bin/activate
+   source ~/biomedbert-env/bin/activate
    ```
-2. Entre na pasta do projeto e inicie o servidor:
+
+3. **Start the program:**
    ```bash
-   cd /caminho/da/pasta
-   python3 servidor.py
+   python3 biomedbert_app.py
    ```
-3. Abra o arquivo `interface.html` no navegador (Firefox ou Chrome).
 
-**Atalho** (ativa o ambiente, entra na pasta e inicia tudo de uma vez):
-```bash
-source ~/biomedbert-env/bin/activate && cd ~/biomedbert/final\ com\ arquivos\ menores && python3 servidor.py
-```
-
-### O que a interface faz
-- Envia um arquivo `.ris` ou `.rdf` exportado do Zotero
-- Classifica todos os artigos usando o modelo BiomedBERT treinado
-- Permite baixar o resultado em **JSON** ou **Markdown**
-
-> O modelo já está treinado e salvo na pasta `modelo_treinado(1)/`. Não é necessário retreinar para classificar novos arquivos.
+The graphical window will open. No further terminal interaction is needed.
 
 ---
 
-## Treinamento no Google Colab (com GPU)
+### Option B — Run as a program with a double-click (Linux Mint)
 
-Link do Google Colab: **https://colab.research.google.com/**
+You can make `biomedbert_app.py` behave like a regular application:
 
-### Como ativar a GPU no Colab
+1. Right-click `biomedbert_app.py` in the Files app.
+2. Go to **Properties → Permissions**.
+3. Check the box **"Allow executing file as program"**.
+4. Close Properties.
+5. Double-click the file — the system will ask whether to run it or view it; choose **"Run"**.
 
-1. Abra um novo notebook em https://colab.research.google.com/
-2. No menu superior, clique em **Ambiente de execução** (ou "Runtime", se estiver em inglês).
-3. Clique em **Alterar o tipo de ambiente de execução** ("Change runtime type").
-4. Em **Acelerador de hardware** ("Hardware accelerator"), selecione **GPU** (pode aparecer como T4 GPU).
-5. Clique em **Salvar**.
-6. Para confirmar que a GPU está ativa, rode em uma célula:
+> **Note:** This method requires the virtual environment to already have the libraries installed. On other Linux distributions the path to the Permissions setting may differ, but the concept is the same.
+
+---
+
+### What the interface does
+
+1. Click **"▶ Start BiomedBERT"** to load the model into memory (takes 30–60 seconds; only needed once per session).
+2. Click **"Browse…"** and select a `.ris` or `.rdf` file exported from Zotero.
+3. Click **"▶ Classify Articles"** and wait for the progress bar to complete.
+4. Download the results in one of three formats:
+   - **Full JSON** — complete output with all fields and confidence scores
+   - **Markdown Table** — formatted report with abstracts and rationale
+   - **JSON for Review** — compact output with the essential fields for systematic review
+
+> The model is already trained and saved in the `modelo_treinado(1)/` folder. **No retraining is needed to classify new files.** The program runs fully offline — it never contacts the internet during classification.
+
+---
+
+## Training on Google Colab (with GPU)
+
+Google Colab link: **https://colab.research.google.com/**
+
+### How to enable the GPU in Colab
+
+1. Open a new notebook at https://colab.research.google.com/
+2. In the top menu, click **Runtime**.
+3. Click **Change runtime type**.
+4. Under **Hardware accelerator**, select **GPU** (may appear as T4 GPU).
+5. Click **Save**.
+6. To confirm the GPU is active, run in a cell:
    ```python
    import torch
    print(torch.cuda.is_available())
-   print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else "Sem GPU")
+   print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else "No GPU")
    ```
-   Deve imprimir `True` e o nome da GPU (ex: `Tesla T4`).
+   It should print `True` and the GPU name (e.g. `Tesla T4`).
 
-### Antes de rodar o script
+### Before running the script
 
-Faça upload dos arquivos `area completo.json` e `tipo completo.json` para a pasta `/content/` do Colab (ícone de pasta no menu lateral esquerdo → botão de upload).
+Upload the files `area completo.json` and `tipo completo.json` to the `/content/` folder in Colab (folder icon in the left sidebar → upload button).
 
-### Script de treinamento
+### Training script
 
-Cole o script abaixo em uma célula do Colab e execute:
+Paste the script below into a Colab cell and run it:
 
 ```python
-# Instalar dependências
+# Install dependencies
 !pip install transformers torch accelerate -q
 
 import json, os, torch
@@ -113,11 +142,11 @@ from transformers import (AutoTokenizer, AutoModelForSequenceClassification,
                           Trainer, TrainingArguments)
 from torch.utils.data import Dataset
 
-# ── Modelo ────────────────────────────────────────────────────────────────────
+# ── Model ─────────────────────────────────────────────────────────────────────
 MODEL_NAME = "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext"
-print(f"Modelo: {MODEL_NAME}")
+print(f"Model: {MODEL_NAME}")
 
-# ── Categorias ────────────────────────────────────────────────────────────────
+# ── Categories ────────────────────────────────────────────────────────────────
 AREAS = [
     "Áreas não relacionadas à saúde",
     "Ciências Biológicas e da Saúde",
@@ -135,7 +164,7 @@ TIPOS = [
     "Revisão",
 ]
 
-# ── Texto de entrada ──────────────────────────────────────────────────────────
+# ── Input text ────────────────────────────────────────────────────────────────
 def texto_artigo(art):
     titulo = art.get("Título completo do estudo", "") or ""
     resumo = art.get("Resumo", "") or ""
@@ -158,11 +187,11 @@ class ArticleDataset(Dataset):
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 os.makedirs("/content/modelo_treinado", exist_ok=True)
 
-# ── Treinar ÁREA (6 épocas) ───────────────────────────────────────────────────
-print("\n=== Carregando arquivo de ÁREA ===")
+# ── Train AREA (6 epochs) ─────────────────────────────────────────────────────
+print("\n=== Loading AREA file ===")
 with open("/content/area completo.json", encoding="utf-8") as f:
     dados_area = json.load(f)
-print(f"Artigos carregados: {len(dados_area)}")
+print(f"Articles loaded: {len(dados_area)}")
 
 textos_area, labels_area = [], []
 nao_encontrados_area = set()
@@ -174,9 +203,9 @@ for art in dados_area:
     elif val:
         nao_encontrados_area.add(val)
 
-print(f"Artigos válidos para treino de ÁREA: {len(textos_area)}")
+print(f"Valid articles for AREA training: {len(textos_area)}")
 if nao_encontrados_area:
-    print(f"Valores não reconhecidos em ÁREA: {nao_encontrados_area}")
+    print(f"Unrecognised AREA values: {nao_encontrados_area}")
 
 model_area = AutoModelForSequenceClassification.from_pretrained(
     MODEL_NAME, num_labels=len(AREAS))
@@ -193,13 +222,13 @@ Trainer(model=model_area, args=args_area,
         train_dataset=ArticleDataset(textos_area, labels_area, tokenizer)).train()
 model_area.save_pretrained("/content/modelo_treinado/area", max_shard_size="90MB")
 tokenizer.save_pretrained("/content/modelo_treinado/area")
-print("ÁREA salvo.")
+print("AREA saved.")
 
-# ── Treinar TIPO (6 épocas) ───────────────────────────────────────────────────
-print("\n=== Carregando arquivo de TIPO ===")
+# ── Train TIPO (6 epochs) ─────────────────────────────────────────────────────
+print("\n=== Loading TIPO file ===")
 with open("/content/tipo completo.json", encoding="utf-8") as f:
     dados_tipo = json.load(f)
-print(f"Artigos carregados: {len(dados_tipo)}")
+print(f"Articles loaded: {len(dados_tipo)}")
 
 textos_tipo, labels_tipo = [], []
 nao_encontrados_tipo = set()
@@ -211,9 +240,9 @@ for art in dados_tipo:
     elif val:
         nao_encontrados_tipo.add(val)
 
-print(f"Artigos válidos para treino de TIPO: {len(textos_tipo)}")
+print(f"Valid articles for TIPO training: {len(textos_tipo)}")
 if nao_encontrados_tipo:
-    print(f"Valores não reconhecidos em TIPO: {nao_encontrados_tipo}")
+    print(f"Unrecognised TIPO values: {nao_encontrados_tipo}")
 
 model_tipo = AutoModelForSequenceClassification.from_pretrained(
     MODEL_NAME, num_labels=len(TIPOS))
@@ -230,29 +259,29 @@ Trainer(model=model_tipo, args=args_tipo,
         train_dataset=ArticleDataset(textos_tipo, labels_tipo, tokenizer)).train()
 model_tipo.save_pretrained("/content/modelo_treinado/tipo", max_shard_size="90MB")
 tokenizer.save_pretrained("/content/modelo_treinado/tipo")
-print("TIPO salvo.")
+print("TIPO saved.")
 
-# ── Zipar e baixar ────────────────────────────────────────────────────────────
+# ── Zip and download ──────────────────────────────────────────────────────────
 import shutil
 shutil.make_archive("/content/modelo_treinado", "zip", "/content/modelo_treinado")
 from google.colab import files
 files.download("/content/modelo_treinado.zip")
-print("Download iniciado!")
+print("Download started!")
 ```
 
-Ao final, o Colab vai baixar automaticamente um arquivo `modelo_treinado.zip` contendo os dois modelos treinados (`area/` e `tipo/`). Extraia esse zip e coloque a pasta junto com `servidor.py` e `interface.html` para usar os modelos na interface local.
+At the end, Colab will automatically download a file called `modelo_treinado.zip` containing both trained models (`area/` and `tipo/`). Extract the zip and place the folder alongside `biomedbert_app.py` to use the models with the graphical interface.
 
 ---
 
-## Categorias do modelo
+## Model Categories
 
-### Área Principal (4 categorias)
+### Main Area (4 categories)
 - Áreas não relacionadas à saúde
 - Ciências Biológicas e da Saúde
 - Medicina
 - Odontologia
 
-### Tipo de Estudo (7 categorias)
+### Study Type (7 categories)
 - Caso clínico / Série de casos
 - Estudo em animais
 - Estudo in vitro
@@ -263,18 +292,19 @@ Ao final, o Colab vai baixar automaticamente um arquivo `modelo_treinado.zip` co
 
 ---
 
-## Estrutura do projeto
+## Project Structure
 
 ```
 .
-├── servidor.py                    # Backend Flask (classificação)
-├── interface.html                 # Interface web
-├── modelo_treinado(1)/            # Modelo treinado em shards de 90MB
-│   ├── area/                      # Modelo de classificação de área
+├── biomedbert_app.py              # Graphical interface + classification engine
+├── servidor.py                    # Legacy Flask backend (no longer required)
+├── interface.html                 # Legacy web interface (no longer required)
+├── modelo_treinado(1)/            # Trained model — 90 MB shards
+│   ├── area/                      # Main-area classification model
 │   │   ├── model-00001-of-00005.safetensors
 │   │   ├── ...
 │   │   └── tokenizer.json
-│   └── tipo/                      # Modelo de classificação de tipo
+│   └── tipo/                      # Study-type classification model
 │       ├── model-00001-of-00005.safetensors
 │       ├── ...
 │       └── tokenizer.json
